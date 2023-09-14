@@ -1,6 +1,6 @@
 ####################################################################
 # Developer: Julian Cotto
-# Date: 9/13/2023
+# Date: 9/14/2023
 # File Name: main.py
 # Description: This is the main running file for the project.
 ####################################################################
@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import sklearn
 from packaging import version
 
-from functions import load_housing_data
-from functions import save_fig
+from loadData import load_housing_data
+from saveFigs import save_fig
 
 assert version.parse(sklearn.__version__) >= version.parse("1.0.1")
 assert sys.version_info >= (3, 7)
