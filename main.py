@@ -48,6 +48,12 @@ def main() -> None:
     for set_ in (strat_train_set, strat_test_set):
         set_.drop("income_cat", axis=1, inplace=True)
 
+    print("Length of Test Set:", len(test_set))
+    print("Length of Test Set:", len(train_set))
+
+    print("Length of Stratified Test Set:", len(strat_test_set))
+    print("Length of Stratified Test Set:", len(strat_train_set))
+
 
 if __name__ == '__main__':
     main()
