@@ -25,17 +25,6 @@ def main() -> None:
     # load housing data csv and create directory if it doesn't exist
     housing = load_housing_data()
 
-    # extra code – the next 5 lines define the default font sizes
-    plt.rc('font', size=14)
-    plt.rc('axes', labelsize=14, titlesize=14)
-    plt.rc('legend', fontsize=14)
-    plt.rc('xtick', labelsize=10)
-    plt.rc('ytick', labelsize=10)
-
-    housing.hist(bins=50, figsize=(12, 8))
-    save_fig("attribute_histogram_plots")  # extra code
-    plt.show()
-
     ##############################################################
     #  generating test set and train set using random sampling   #
     # see addlMainMethods.py for more methods to accomplish this #

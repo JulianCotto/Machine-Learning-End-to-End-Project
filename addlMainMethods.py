@@ -52,6 +52,17 @@ train_set_2, test_set_2 = split_data_with_id_hash(housing_with_id, 0.2, "id")
 print(len(train_set_2))
 print(len(test_set_2))
 
+# extra code – the next 5 lines define the default font sizes
+plt.rc('font', size=14)
+plt.rc('axes', labelsize=14, titlesize=14)
+plt.rc('legend', fontsize=14)
+plt.rc('xtick', labelsize=10)
+plt.rc('ytick', labelsize=10)
+
+housing.hist(bins=50, figsize=(12, 8))
+save_fig("attribute_histogram_plots")  # extra code
+plt.show()
+
 print("Extra code – shows how to compute the 10.7% proba of getting a bad sample")
 sample_size = 1000
 ratio_female = 0.511
