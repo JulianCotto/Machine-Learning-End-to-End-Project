@@ -7,38 +7,29 @@
 import sys
 from pathlib import Path
 from packaging import version
+from scipy import stats
+import joblib
 
 import sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
-from sklearn.compose import TransformedTargetRegressor
-from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.pipeline import make_pipeline
-from sklearn import set_config
 from sklearn.compose import ColumnTransformer
 from sklearn.compose import make_column_selector
-from sklearn.compose import make_column_transformer
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.metrics import mean_squared_error
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import GridSearchCV
-from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import RandomizedSearchCV
 
 import numpy as np
 import pandas as pd
 from scipy.stats import randint
 
-from functions import monkey_patch_get_signature_names_out
 from functions import ratio_pipeline
-from classes import StandardScalerClone
 from classes import ClusterSimilarity
 from loadData import load_housing_data
 from saveFigs import getFig1
@@ -295,6 +286,40 @@ def main() -> None:
     getFig11()
     print("Figs Generated")
 
+    print("Inspecting Best Models")
+    final_model = rnd_search.best_estimator_  # includes preprocessing
+    feature_importances = final_model["random_forest"].feature_importances_
+    feature_importances.round(2)
+    print("Inspection Complete")
+
+    print("Sorting Importance Scores in Descending Order")
+    sorted(zip(feature_importances,
+               final_model["preprocessing"].get_feature_names_out()),
+           reverse=True)
+    print("Sorting Completed")
+
+    print("Getting Predictors & Labels From Test Set"
+          "Running Final_Model to Transform Data")
+    X_test = strat_test_set.drop("median_house_value", axis=1)
+    y_test = strat_test_set["median_house_value"].copy()
+
+    final_predictions = final_model.predict(X_test)
+
+    final_rmse = mean_squared_error(y_test, final_predictions, squared=False)
+    print("Process Complete. Data Ready For Evaluation")
+    print(final_rmse)
+
+    print("Computing 95% Confidence Interval")
+    confidence = 0.95
+    squared_errors = (final_predictions - y_test) ** 2
+    confidenceInterval = np.sqrt(stats.t.interval(confidence, len(squared_errors) - 1,
+                             loc=squared_errors.mean(),
+                             scale=stats.sem(squared_errors)))
+    print(confidenceInterval)
+    print("95% Confidence Interval Computed")
+
+    print("Saving Final_Modal for Production")
+    joblib.dump(final_model, "my_california_housing_model.pkl")
     print("End")
 
 
