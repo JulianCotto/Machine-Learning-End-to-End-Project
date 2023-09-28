@@ -5,7 +5,8 @@
 # Description: This file contains functions used in the project.
 ####################################################################
 
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator
+from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_array
 from sklearn.utils.validation import check_is_fitted
 from sklearn.cluster import KMeans
@@ -31,6 +32,7 @@ class StandardScalerClone(BaseEstimator, TransformerMixin):
             X = X - self.mean_
         return X / self.scale_
 
+
 class ClusterSimilarity(BaseEstimator, TransformerMixin):
     def __init__(self, n_clusters=10, gamma=1.0, random_state=None):
         self.n_clusters = n_clusters
@@ -47,3 +49,4 @@ class ClusterSimilarity(BaseEstimator, TransformerMixin):
 
     def get_feature_names_out(self, names=None):
         return [f"Cluster {i} similarity" for i in range(self.n_clusters)]
+

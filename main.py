@@ -17,12 +17,19 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import TransformedTargetRegressor
 from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
+from sklearn.pipeline import make_pipeline
+from sklearn import set_config
+from sklearn.compose import ColumnTransformer
+from sklearn.compose import make_column_selector
+from sklearn.compose import make_column_transformer
 from sklearn.preprocessing import FunctionTransformer
-from sklearn.metrics.pairwise import rbf_kernel
 
 import numpy as np
 import pandas as pd
 
+from functions import monkey_patch_get_signature_names_out
+from functions import ratio_pipeline
 from classes import StandardScalerClone
 from classes import ClusterSimilarity
 from loadData import load_housing_data
@@ -36,6 +43,7 @@ from saveFigs import getFig5
 from saveFigs import getFig6
 from saveFigs import getFig7
 from saveFigs import getFig8
+from saveFigs import getFig9
 
 assert version.parse(sklearn.__version__) >= version.parse("1.0.1")
 assert sys.version_info >= (3, 7)
@@ -213,25 +221,69 @@ def main() -> None:
 
     print("Predictions:", predictions)
 
-    # create a custom transformer to apply to population attribute
-    log_transformer = FunctionTransformer(np.log, inverse_func=np.exp)
-    log_pop = log_transformer.transform(housing[["population"]])
+    cluster_simil = ClusterSimilarity(n_clusters=10, gamma=1., random_state=42)
+    similarities = cluster_simil.fit_transform(housing[["latitude", "longitude"]],
+                                               sample_weight=housing_labels)
 
-    rbf_transformer = FunctionTransformer(rbf_kernel,
-                                          kw_args=dict(Y=[[35.]], gamma=0.1))
-    age_simil_35 = rbf_transformer.transform(housing[["housing_median_age"]])
-    print(age_simil_35)
+    print(similarities[:3])
 
-    sf_coords = 37.7749, -122.41
-    sf_transformer = FunctionTransformer(rbf_kernel,
-                                         kw_args=dict(Y=[sf_coords], gamma=0.1))
-    sf_simil = sf_transformer.transform(housing[["latitude", "longitude"]])
-    print(sf_simil)
+    getFig9(housing, similarities, cluster_simil)
 
-    ratio_transformer = FunctionTransformer(lambda X: X[:, [0]] / X[:, [1]])
-    print(ratio_transformer.transform(np.array([[1., 2.], [3., 4.]])))
+    num_pipeline = make_pipeline(SimpleImputer(strategy="median"), StandardScaler())
 
+    set_config(display='diagram')
+    print(num_pipeline)
 
+    housing_num_prepared = num_pipeline.fit_transform(housing_num)
+    print(housing_num_prepared[:2].round(2))
+
+    monkey_patch_get_signature_names_out()
+
+    df_housing_num_prepared = pd.DataFrame(
+        housing_num_prepared, columns=num_pipeline.get_feature_names_out(),
+        index=housing_num.index)
+    print(df_housing_num_prepared)
+
+    cat_pipeline = make_pipeline(
+        SimpleImputer(strategy="most_frequent"),
+        OneHotEncoder(handle_unknown="ignore"))
+
+    preprocessing = make_column_transformer(
+        (num_pipeline, make_column_selector(dtype_include=np.number)),
+        (cat_pipeline, make_column_selector(dtype_include=object)),
+    )
+
+    housing_prepared = preprocessing.fit_transform(housing)
+    print(housing_prepared)
+
+    # extra code – shows that we can get a DataFrame out if we want
+    # housing_prepared_fr = pd.DataFrame(
+    #     housing_prepared,
+    #     columns=preprocessing.get_feature_names_out(),
+    #     index=housing.index)
+    # housing_prepared_fr.head(2)
+
+    log_pipeline = make_pipeline(
+        SimpleImputer(strategy="median"),
+        FunctionTransformer(np.log, feature_names_out="one-to-one"),
+        StandardScaler())
+    cluster_simil = ClusterSimilarity(n_clusters=10, gamma=1., random_state=42)
+    default_num_pipeline = make_pipeline(SimpleImputer(strategy="median"),
+                                         StandardScaler())
+    preprocessing = ColumnTransformer([
+        ("bedrooms", ratio_pipeline(), ["total_bedrooms", "total_rooms"]),
+        ("rooms_per_house", ratio_pipeline(), ["total_rooms", "households"]),
+        ("people_per_house", ratio_pipeline(), ["population", "households"]),
+        ("log", log_pipeline, ["total_bedrooms", "total_rooms", "population",
+                               "households", "median_income"]),
+        ("geo", cluster_simil, ["latitude", "longitude"]),
+        ("cat", cat_pipeline, make_column_selector(dtype_include=object)),
+    ],
+        remainder=default_num_pipeline)  # one column remaining: housing_median_age
+
+    housing_prepared = preprocessing.fit_transform(housing)
+    print(housing_prepared.shape)
+    print(preprocessing.get_feature_names_out())
 
     # marker for end of program
     input("Press Enter to Exit...")

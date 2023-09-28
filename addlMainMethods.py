@@ -183,3 +183,35 @@ print(df_output)
 # transform multimodal data into a distributions
 age_simil_35 = rbf_kernel(housing[["housing_median_age"]], [[35]], gamma=0.1)
 print(age_simil_35)
+
+# # create a custom transformer to apply to population attribute
+# log_transformer = FunctionTransformer(np.log, inverse_func=np.exp)
+# log_pop = log_transformer.transform(housing[["population"]])
+#
+# rbf_transformer = FunctionTransformer(rbf_kernel,
+#                                       kw_args=dict(Y=[[35.]], gamma=0.1))
+# age_simil_35 = rbf_transformer.transform(housing[["housing_median_age"]])
+# print(age_simil_35)
+#
+# sf_coords = 37.7749, -122.41
+# sf_transformer = FunctionTransformer(rbf_kernel,
+#                                      kw_args=dict(Y=[sf_coords], gamma=0.1))
+# sf_simil = sf_transformer.transform(housing[["latitude", "longitude"]])
+# print(sf_simil)
+#
+# ratio_transformer = FunctionTransformer(lambda X: X[:, [0]] / X[:, [1]])
+# print(ratio_transformer.transform(np.array([[1., 2.], [3., 4.]])))
+
+num_attribs = ["longitude", "latitude", "housing_median_age", "total_rooms",
+               "total_bedrooms", "population", "households", "median_income"]
+cat_attribs = ["ocean_proximity"]
+
+num_pipeline = Pipeline([
+    ("impute", SimpleImputer(strategy="median")),
+    ("standardize", StandardScaler()),
+])
+
+preprocessing = ColumnTransformer([
+    ("num", num_pipeline, num_attribs),
+    ("cat", cat_pipeline, cat_attribs),
+])
