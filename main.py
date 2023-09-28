@@ -110,10 +110,21 @@ def main() -> None:
     save_fig("california_housing_prices_plot")
     plt.show()
 
-    # check for correlations between attributes using scatter_matrix() method
-    # choosing some important attributes to reduce number of plots in figure
-    attributes = ['median_house_value','median_income','total_rooms','housing_median_age']
-    scatter_matrix(housing[attributes],figsize=(15,12))
+    # check for correlations using the corr() method
+    attributes = ['median_house_value',
+                  'median_income',
+                  'total_rooms',
+                  'housing_median_age',
+                  'households',
+                  'total_bedrooms',
+                  'population',
+                  'longitude',
+                  'latitude']
+    corr_matrix = housing[attributes].corr()
+    print(corr_matrix['median_house_value'].sort_values(ascending=False))
+
+    # visualize correlations using the scatter_matrix() function
+    scatter_matrix(housing[attributes], figsize=(15, 12))
     save_fig("scatter_matrix_plot")  # extra code
     plt.show()
 
