@@ -23,6 +23,8 @@ from sklearn.metrics.pairwise import rbf_kernel
 import numpy as np
 import pandas as pd
 
+from classes import StandardScalerClone
+from classes import ClusterSimilarity
 from loadData import load_housing_data
 from saveFigs import getFig1
 from saveFigs import getFig2
