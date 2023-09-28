@@ -306,8 +306,6 @@ def main() -> None:
                                    squared=False)
     print(tree_rmse)
 
-    # marker for end of program
-    input("Press Enter to Exit...")
 
 
 if __name__ == '__main__':
