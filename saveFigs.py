@@ -12,6 +12,7 @@ from pandas.plotting import scatter_matrix
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import rbf_kernel
+from classes import ClusterSimilarity
 
 # extra code – code to save the figures as high-res PNGs for the book
 IMAGES_PATH = Path() / "images" / "end_to_end_project"
@@ -145,4 +146,27 @@ def getFig8(housing):
 
     plt.legend(loc="upper left")
     save_fig("age_similarity_plot")
+    plt.show()
+
+
+def getFig9(housing, similarities, cluster_simil):
+    # extra code – this cell generates Figure 2–19
+
+    housing_renamed = housing.rename(columns={
+        "latitude": "Latitude", "longitude": "Longitude",
+        "population": "Population",
+        "median_house_value": "Median house value (ᴜsᴅ)"})
+    housing_renamed["Max cluster similarity"] = similarities.max(axis=1)
+
+    housing_renamed.plot(kind="scatter", x="Longitude", y="Latitude", grid=True,
+                         s=housing_renamed["Population"] / 100, label="Population",
+                         c="Max cluster similarity",
+                         cmap="jet", colorbar=True,
+                         legend=True, sharex=False, figsize=(10, 7))
+    plt.plot(cluster_simil.kmeans_.cluster_centers_[:, 1],
+             cluster_simil.kmeans_.cluster_centers_[:, 0],
+             linestyle="", color="black", marker="X", markersize=20,
+             label="Cluster centers")
+    plt.legend(loc="upper right")
+    save_fig("district_cluster_plot")
     plt.show()
