@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import binom
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import IsolationForest
 from loadData import load_housing_data
 from addlTestSetMethods import shuffle_and_split_data
 from addlTestSetMethods import split_data_with_id_hash
@@ -115,3 +116,44 @@ print(strat_test_set["income_cat"].value_counts() / len(strat_test_set))
 
 print(strat_train_set)
 print(strat_test_set)
+
+# Get rid of the corresponding districts.
+housing.dropna(subset=["total_bedrooms"], inplace=True)
+
+null_rows_idx = housing.isnull().any(axis=1)
+housing.loc[null_rows_idx].head()
+
+housing_option1 = housing.copy()
+
+housing_option1.dropna(subset=["total_bedrooms"], inplace=True)  # option 1
+
+housing_option1.loc[null_rows_idx].head()
+
+# Get rid of the whole attribute.
+housing.drop("total_bedrooms", axis=1)
+
+housing_option2 = housing.copy()
+
+housing_option2.drop("total_bedrooms", axis=1, inplace=True)  # option 2
+
+housing_option2.loc[null_rows_idx].head()
+
+# Set the missing values to some value (zero, the mean, the median, etc.). This is called imputation.
+median = housing["total_bedrooms"].median()
+housing["total_bedrooms"].fillna(median, inplace=True)
+
+housing_option3 = housing.copy()
+
+median = housing["total_bedrooms"].median()
+housing_option3["total_bedrooms"].fillna(median, inplace=True)  # option 3
+
+housing_option3.loc[null_rows_idx].head()
+
+# drop outliers
+isolation_forest = IsolationForest(random_state=42)
+outlier_pred = isolation_forest.fit_predict(X)
+print(outlier_pred)
+
+
+
+

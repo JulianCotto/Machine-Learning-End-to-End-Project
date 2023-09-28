@@ -17,6 +17,8 @@ from pathlib import Path
 from loadData import load_housing_data
 from packaging import version
 from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import IsolationForest
 from saveFigs import save_fig
 
 assert version.parse(sklearn.__version__) >= version.parse("1.0.1")
@@ -155,6 +157,40 @@ def main() -> None:
                   'bedrooms_ratio']
     corr_matrix = housing[attributes].corr()
     print('\n', corr_matrix["median_house_value"].sort_values(ascending=False))
+
+    # create a copy of the stratified train set
+    housing = strat_train_set.drop("median_house_value", axis=1)
+    housing_labels = strat_train_set["median_house_value"].copy()
+
+
+    # Set the missing values to some value (zero, the mean, the median, etc.). This is called imputation.
+    imputer = SimpleImputer(strategy="median")
+
+    # create a copy of the data with only the numerical attributes
+    housing_num = housing.select_dtypes(include=[np.number])
+
+    # fit the imputer instance to the training data using the fit() method
+    imputer.fit(housing_num)
+
+    # variables introduced for visualization of data
+    print(imputer.statistics_)
+
+    # Check that this is the same as manually computing the median of each attribute:
+    print(housing_num.median().values)
+
+    # transform the training set by replacing missing values with the learned medians
+    X = imputer.transform(housing_num)
+
+    print(imputer.feature_names_in_)
+    print(imputer.strategy)
+
+    # convert the NumPy array into a Pandas DataFrame
+    housing_tr = pd.DataFrame(X, columns=housing_num.columns,
+                              index=housing_num.index)
+
+    # code to drop outliers
+    # housing = housing.iloc[outlier_pred == 1]
+    # housing_labels = housing_labels.iloc[outlier_pred == 1]
 
     # marker for end of program
     input("Press Enter to Exit...")
