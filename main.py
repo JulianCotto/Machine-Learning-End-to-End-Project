@@ -286,20 +286,21 @@ def main() -> None:
         remainder=default_num_pipeline)  # one column remaining: housing_median_age
 
     housing_prepared = preprocessing.fit_transform(housing)
-    print(housing_prepared.shape)
+    print("Housing Prepared Shape", housing_prepared.shape)
     print(preprocessing.get_feature_names_out())
 
     forest_reg = make_pipeline(preprocessing,
                                RandomForestRegressor(random_state=42))
-    forest_rmses = cross_val_score(forest_reg, housing, housing_labels,
-                                   scoring="neg_root_mean_squared_error", cv=10)
+    forest_rmses = -cross_val_score(forest_reg, housing, housing_labels,
+                                scoring="neg_root_mean_squared_error", cv=10)
 
     print(pd.Series(forest_rmses).describe())
+
     forest_reg.fit(housing, housing_labels)
     housing_predictions = forest_reg.predict(housing)
     forest_rmse = mean_squared_error(housing_labels, housing_predictions,
                                      squared=False)
-    print(forest_rmse)
+    print("Forest RMSE", forest_rmse)
 
     print("End")
 
