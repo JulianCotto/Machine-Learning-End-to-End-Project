@@ -28,6 +28,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
 
 import numpy as np
 import pandas as pd
@@ -301,6 +302,38 @@ def main() -> None:
     forest_rmse = mean_squared_error(housing_labels, housing_predictions,
                                      squared=False)
     print("Forest RMSE", forest_rmse)
+
+    full_pipeline = Pipeline([
+        ("preprocessing", preprocessing),
+        ("random_forest", RandomForestRegressor(random_state=42)),
+    ])
+    param_grid = [
+        {'preprocessing__geo__n_clusters': [5, 8, 10],
+         'random_forest__max_features': [4, 6, 8]},
+        {'preprocessing__geo__n_clusters': [10, 15],
+         'random_forest__max_features': [6, 8, 10]},
+    ]
+    grid_search = GridSearchCV(full_pipeline, param_grid, cv=3,
+                               scoring='neg_root_mean_squared_error')
+    grid_search.fit(housing, housing_labels)
+
+    print(str(full_pipeline.get_params().keys())[:1000] + "...")
+
+    print("Best Params", grid_search.best_params_)
+    print("Best Estimator", grid_search.best_estimator_)
+
+    cv_res = pd.DataFrame(grid_search.cv_results_)
+    cv_res.sort_values(by="mean_test_score", ascending=False, inplace=True)
+
+    # extra code – these few lines of code just make the DataFrame look nicer
+    cv_res = cv_res[["param_preprocessing__geo__n_clusters",
+                     "param_random_forest__max_features", "split0_test_score",
+                     "split1_test_score", "split2_test_score", "mean_test_score"]]
+    score_cols = ["split0", "split1", "split2", "mean_test_rmse"]
+    cv_res.columns = ["n_clusters", "max_features"] + score_cols
+    cv_res[score_cols] = -cv_res[score_cols].round().astype(np.int64)
+
+    cv_res.head()
 
     print("End")
 
