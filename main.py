@@ -24,6 +24,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.compose import make_column_selector
 from sklearn.compose import make_column_transformer
 from sklearn.preprocessing import FunctionTransformer
+from sklearn.metrics import mean_squared_error
+from sklearn.tree import DecisionTreeRegressor
 
 import numpy as np
 import pandas as pd
@@ -285,8 +287,25 @@ def main() -> None:
     print(housing_prepared.shape)
     print(preprocessing.get_feature_names_out())
 
-    # marker for end of program
-    input("Press Enter to Exit...")
+    lin_reg = make_pipeline(preprocessing, LinearRegression())
+    print(lin_reg.fit(housing, housing_labels))
+
+    housing_predictions = lin_reg.predict(housing)
+    print(housing_predictions[:5].round(-2))
+    print(housing_labels.iloc[:5].values)
+
+    lin_rmse = mean_squared_error(housing_labels, housing_predictions,
+                                  squared=False)
+    print(lin_rmse)
+
+    tree_reg = make_pipeline(preprocessing, DecisionTreeRegressor(random_state=42))
+    tree_reg.fit(housing, housing_labels)
+
+    housing_predictions = tree_reg.predict(housing)
+    tree_rmse = mean_squared_error(housing_labels, housing_predictions,
+                                   squared=False)
+    print(tree_rmse)
+
 
 
 if __name__ == '__main__':
