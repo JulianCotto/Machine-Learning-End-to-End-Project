@@ -13,6 +13,11 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import rbf_kernel
 from classes import ClusterSimilarity
+from scipy.stats import loguniform
+from scipy.stats import randint
+from scipy.stats import uniform
+from scipy.stats import geom
+from scipy.stats import expon
 
 # extra code – code to save the figures as high-res PNGs for the book
 IMAGES_PATH = Path() / "images" / "end_to_end_project"
@@ -169,4 +174,95 @@ def getFig9(housing, similarities, cluster_simil):
              label="Cluster centers")
     plt.legend(loc="upper right")
     save_fig("district_cluster_plot")
+    plt.show()
+
+def getFig10():
+
+
+    xs1 = np.arange(0, 7 + 1)
+    randint_distrib = randint(0, 7 + 1).pmf(xs1)
+
+    xs2 = np.linspace(0, 7, 500)
+    uniform_distrib = uniform(0, 7).pdf(xs2)
+
+    xs3 = np.arange(0, 7 + 1)
+    geom_distrib = geom(0.5).pmf(xs3)
+
+    xs4 = np.linspace(0, 7, 500)
+    expon_distrib = expon(scale=1).pdf(xs4)
+
+    plt.figure(figsize=(12, 7))
+
+    plt.subplot(2, 2, 1)
+    plt.bar(xs1, randint_distrib, label="scipy.randint(0, 7 + 1)")
+    plt.ylabel("Probability")
+    plt.legend()
+    plt.axis([-1, 8, 0, 0.2])
+
+    plt.subplot(2, 2, 2)
+    plt.fill_between(xs2, uniform_distrib, label="scipy.uniform(0, 7)")
+    plt.ylabel("PDF")
+    plt.legend()
+    plt.axis([-1, 8, 0, 0.2])
+
+    plt.subplot(2, 2, 3)
+    plt.bar(xs3, geom_distrib, label="scipy.geom(0.5)")
+    plt.xlabel("Hyperparameter value")
+    plt.ylabel("Probability")
+    plt.legend()
+    plt.axis([0, 7, 0, 1])
+
+    plt.subplot(2, 2, 4)
+    plt.fill_between(xs4, expon_distrib, label="scipy.expon(scale=1)")
+    plt.xlabel("Hyperparameter value")
+    plt.ylabel("PDF")
+    plt.legend()
+    plt.axis([0, 7, 0, 1])
+
+    plt.show()
+
+def getFig11():
+
+    xs1 = np.linspace(0, 7, 500)
+    expon_distrib = expon(scale=1).pdf(xs1)
+
+    log_xs2 = np.linspace(-5, 3, 500)
+    log_expon_distrib = np.exp(log_xs2 - np.exp(log_xs2))
+
+    xs3 = np.linspace(0.001, 1000, 500)
+    loguniform_distrib = loguniform(0.001, 1000).pdf(xs3)
+
+    log_xs4 = np.linspace(np.log(0.001), np.log(1000), 500)
+    log_loguniform_distrib = uniform(np.log(0.001), np.log(1000)).pdf(log_xs4)
+
+    plt.figure(figsize=(12, 7))
+
+    plt.subplot(2, 2, 1)
+    plt.fill_between(xs1, expon_distrib,
+                     label="scipy.expon(scale=1)")
+    plt.ylabel("PDF")
+    plt.legend()
+    plt.axis([0, 7, 0, 1])
+
+    plt.subplot(2, 2, 2)
+    plt.fill_between(log_xs2, log_expon_distrib,
+                     label="log(X) with X ~ expon")
+    plt.legend()
+    plt.axis([-5, 3, 0, 1])
+
+    plt.subplot(2, 2, 3)
+    plt.fill_between(xs3, loguniform_distrib,
+                     label="scipy.loguniform(0.001, 1000)")
+    plt.xlabel("Hyperparameter value")
+    plt.ylabel("PDF")
+    plt.legend()
+    plt.axis([0.001, 1000, 0, 0.005])
+
+    plt.subplot(2, 2, 4)
+    plt.fill_between(log_xs4, log_loguniform_distrib,
+                     label="log(X) with X ~ loguniform")
+    plt.xlabel("Log of hyperparameter value")
+    plt.legend()
+    plt.axis([-8, 1, 0, 0.2])
+
     plt.show()
