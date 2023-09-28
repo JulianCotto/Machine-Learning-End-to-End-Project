@@ -137,6 +137,7 @@ def main() -> None:
                  alpha=0.1, grid=True)
     plt.show()
 
+    # create new attributes to see if they are more correlated with median house value
     housing["rooms_per_house"] = housing["total_rooms"] / housing["households"]
     housing["bedrooms_ratio"] = housing["total_bedrooms"] / housing["total_rooms"]
     housing["people_per_house"] = housing["population"] / housing["households"]
@@ -155,7 +156,8 @@ def main() -> None:
     corr_matrix = housing[attributes].corr()
     print('\n', corr_matrix["median_house_value"].sort_values(ascending=False))
 
-    input("Press Enter to continue...")
+    # marker for end of program
+    input("Press Enter to Exit...")
 
 
 if __name__ == '__main__':
