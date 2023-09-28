@@ -5,8 +5,6 @@
 # Description: This is the main running file for the project.
 ####################################################################
 import sys
-import urllib
-from urllib import request
 from pathlib import Path
 from packaging import version
 
@@ -15,16 +13,26 @@ from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.linear_model import LinearRegression
 
 import numpy as np
-
 import pandas as pd
-from pandas.plotting import scatter_matrix
-
-import matplotlib.pyplot as plt
 
 from loadData import load_housing_data
-from saveFigs import save_fig
+from saveFigs import getFig1
+from saveFigs import getFig2
+from saveFigs import getFig3
+from saveFigs import getBeautyFig
+from saveFigs import getScatterFigs
+from saveFigs import getFig4
+from saveFigs import getFig5
+from saveFigs import getFig6
+from saveFigs import getFig7
+from saveFigs import getFig8
 
 assert version.parse(sklearn.__version__) >= version.parse("1.0.1")
 assert sys.version_info >= (3, 7)
@@ -70,52 +78,18 @@ def main() -> None:
     housing = strat_train_set.copy()
 
     # create visualisation of the data
-    housing.plot(kind="scatter", x="longitude", y="latitude", grid=True)
-    save_fig("bad_visualization_plot")  # extra code
-    plt.show()
+    getFig1(housing)
 
     # create visualisation of the data with alpha set to 0.2 to see high density areas
-    housing.plot(kind="scatter", x="longitude", y="latitude", grid=True, alpha=0.2)
-    save_fig("better_visualization_plot")  # extra code
-    plt.show()
+    getFig2(housing)
 
     # create visualisation of the data with radius of each circle representing the district's population
     # color represents the price
     # use a predefined color map (option cmap) called jet, which ranges from blue (low values) to red (high prices)
-    housing.plot(kind="scatter", x="longitude", y="latitude", grid=True,
-                 s=housing["population"] / 100, label="population",
-                 c="median_house_value", cmap="jet", colorbar=True,
-                 legend=True, sharex=False, figsize=(10, 7))
-    save_fig("housing_prices_scatterplot")  # extra code
-    plt.show()
-
-    # extra code – this cell generates the first figure in the chapter
+    getFig3(housing)
 
     # Generate and Download a beautified version of the above image
-    filename = "california.png"
-    if not (IMAGES_PATH / filename).is_file():
-        homl3_root = "https://github.com/ageron/handson-ml3/raw/main/"
-        url = homl3_root + "images/end_to_end_project/" + filename
-        print("Downloading", filename)
-        urllib.request.urlretrieve(url, IMAGES_PATH / filename)
-
-    housing_renamed = housing.rename(columns={
-        "latitude": "Latitude", "longitude": "Longitude",
-        "population": "Population",
-        "median_house_value": "Median house value (ᴜsᴅ)"})
-    housing_renamed.plot(
-        kind="scatter", x="Longitude", y="Latitude",
-        s=housing_renamed["Population"] / 100, label="Population",
-        c="Median house value (ᴜsᴅ)", cmap="jet", colorbar=True,
-        legend=True, sharex=False, figsize=(10, 7))
-
-    california_img = plt.imread(IMAGES_PATH / filename)
-    axis = -124.55, -113.95, 32.45, 42.05
-    plt.axis(axis)
-    plt.imshow(california_img, extent=axis)
-
-    save_fig("california_housing_prices_plot")
-    plt.show()
+    getBeautyFig(housing)
 
     # check for correlations using the corr() method
     attributes = ['median_house_value',
@@ -131,18 +105,9 @@ def main() -> None:
     print(corr_matrix['median_house_value'].sort_values(ascending=False))
 
     # visualize correlations using the scatter_matrix() function
-    scatter_matrix(housing[attributes], figsize=(15, 12))
-    save_fig("scatter_matrix_plot")  # extra code
-    plt.show()
-
-    housing.plot(kind="scatter", x="median_income", y="median_house_value",
-                 alpha=0.1, grid=True)
-    save_fig("income_vs_house_value_scatterplot")  # extra code
-    plt.show()
-
-    housing.plot(kind="scatter", x="median_income", y="median_house_value",
-                 alpha=0.1, grid=True)
-    plt.show()
+    getScatterFigs(housing, attributes)
+    getFig4(housing)
+    getFig5(housing)
 
     # create new attributes to see if they are more correlated with median house value
     housing["rooms_per_house"] = housing["total_rooms"] / housing["households"]
@@ -166,7 +131,6 @@ def main() -> None:
     # create a copy of the stratified train set
     housing = strat_train_set.drop("median_house_value", axis=1)
     housing_labels = strat_train_set["median_house_value"].copy()
-
 
     # Set the missing values to some value (zero, the mean, the median, etc.). This is called imputation.
     imputer = SimpleImputer(strategy="median")
@@ -213,13 +177,38 @@ def main() -> None:
     print(housing_cat_1hot)
     print(cat_encoder.categories_)
 
+    # normalize the data to a scale
+    min_max_scaler = MinMaxScaler(feature_range=(-1, 1))
+    housing_num_min_max_scaled = min_max_scaler.fit_transform(housing_num)
+    print(housing_num_min_max_scaled)
 
+    # standardize the data to a normal distribution
+    std_scaler = StandardScaler()
+    housing_num_std_scaled = std_scaler.fit_transform(housing_num)
+    print(housing_num_std_scaled)
 
+    getFig6(housing)
+    getFig7(housing)
+    getFig8(housing)
 
+    # train a linear regression model
+    target_scaler = StandardScaler()
+    scaled_labels = target_scaler.fit_transform(housing_labels.to_frame())
 
+    model = LinearRegression()
+    model.fit(housing[["median_income"]], scaled_labels)
+    some_new_data = housing[["median_income"]].iloc[:5]  # pretend this is new data
 
+    scaled_predictions = model.predict(some_new_data)
+    predictions = target_scaler.inverse_transform(scaled_predictions)
 
+    # scale labels and train regression model on scaled labels
+    model = TransformedTargetRegressor(LinearRegression(),
+                                       transformer=StandardScaler())
+    model.fit(housing[["median_income"]], housing_labels)
+    predictions = model.predict(some_new_data)
 
+    print("Predictions:", predictions)
 
     # marker for end of program
     input("Press Enter to Exit...")

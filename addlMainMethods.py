@@ -13,10 +13,12 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.metrics.pairwise import rbf_kernel
 from loadData import load_housing_data
 from addlTestSetMethods import shuffle_and_split_data
 from addlTestSetMethods import split_data_with_id_hash
 from addlTestSetMethods import income_cat_proportions
+
 from saveFigs import save_fig
 
 housing = load_housing_data()
@@ -177,3 +179,7 @@ df_output = pd.DataFrame(cat_encoder.transform(df_test_unknown),
                          index=df_test_unknown.index)
 
 print(df_output)
+
+# transform multimodal data into a distributions
+age_simil_35 = rbf_kernel(housing[["housing_median_age"]], [[35]], gamma=0.1)
+print(age_simil_35)
