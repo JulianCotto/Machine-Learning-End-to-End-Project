@@ -115,8 +115,3 @@ print(strat_test_set["income_cat"].value_counts() / len(strat_test_set))
 
 print(strat_train_set)
 print(strat_test_set)
-
-# compute standard correlation coefficient (Pearson's r) between every pair of attributes using corr() method
-# df includes columns that are NaN so this method fails
-corr_matrix = housing.corr()
-corr_matrix['median_house_value'].sort_values(ascending=False)
