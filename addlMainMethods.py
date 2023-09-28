@@ -216,26 +216,3 @@ preprocessing = ColumnTransformer([
     ("cat", cat_pipeline, cat_attribs),
 ])
 
-# lin_reg = make_pipeline(preprocessing, LinearRegression())
-# print(lin_reg.fit(housing, housing_labels))
-#
-# housing_predictions = lin_reg.predict(housing)
-# print(housing_predictions[:5].round(-2))
-# print(housing_labels.iloc[:5].values)
-#
-# lin_rmse = mean_squared_error(housing_labels, housing_predictions,
-#                               squared=False)
-# print(lin_rmse)
-#
-# tree_reg = make_pipeline(preprocessing, DecisionTreeRegressor(random_state=42))
-# tree_reg.fit(housing, housing_labels)
-#
-# housing_predictions = tree_reg.predict(housing)
-# tree_rmse = mean_squared_error(housing_labels, housing_predictions,
-#                                squared=False)
-# print(tree_rmse)
-
-# tree_rmses = -cross_val_score(tree_reg, housing, housing_labels,
-#                               scoring="neg_root_mean_squared_error", cv=10)
-#
-# print(pd.Series(tree_rmses).describe())
