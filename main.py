@@ -11,6 +11,7 @@ from urllib import request
 import sklearn
 import numpy as np
 import pandas as pd
+from pandas.plotting import scatter_matrix
 import matplotlib.pyplot as plt
 from pathlib import Path
 from loadData import load_housing_data
@@ -107,6 +108,22 @@ def main() -> None:
     plt.imshow(california_img, extent=axis)
 
     save_fig("california_housing_prices_plot")
+    plt.show()
+
+    # check for correlations between attributes using scatter_matrix() method
+    # choosing some important attributes to reduce number of plots in figure
+    attributes = ['median_house_value','median_income','total_rooms','housing_median_age']
+    scatter_matrix(housing[attributes],figsize=(15,12))
+    save_fig("scatter_matrix_plot")  # extra code
+    plt.show()
+
+    housing.plot(kind="scatter", x="median_income", y="median_house_value",
+                 alpha=0.1, grid=True)
+    save_fig("income_vs_house_value_scatterplot")  # extra code
+    plt.show()
+
+    housing.plot(kind="scatter", x="median_income", y="median_house_value",
+                 alpha=0.1, grid=True)
     plt.show()
 
 
