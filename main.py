@@ -15,9 +15,10 @@ from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
-
 from sklearn.compose import TransformedTargetRegressor
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.metrics.pairwise import rbf_kernel
 
 import numpy as np
 import pandas as pd
@@ -209,6 +210,26 @@ def main() -> None:
     predictions = model.predict(some_new_data)
 
     print("Predictions:", predictions)
+
+    # create a custom transformer to apply to population attribute
+    log_transformer = FunctionTransformer(np.log, inverse_func=np.exp)
+    log_pop = log_transformer.transform(housing[["population"]])
+
+    rbf_transformer = FunctionTransformer(rbf_kernel,
+                                          kw_args=dict(Y=[[35.]], gamma=0.1))
+    age_simil_35 = rbf_transformer.transform(housing[["housing_median_age"]])
+    print(age_simil_35)
+
+    sf_coords = 37.7749, -122.41
+    sf_transformer = FunctionTransformer(rbf_kernel,
+                                         kw_args=dict(Y=[sf_coords], gamma=0.1))
+    sf_simil = sf_transformer.transform(housing[["latitude", "longitude"]])
+    print(sf_simil)
+
+    ratio_transformer = FunctionTransformer(lambda X: X[:, [0]] / X[:, [1]])
+    print(ratio_transformer.transform(np.array([[1., 2.], [3., 4.]])))
+
+
 
     # marker for end of program
     input("Press Enter to Exit...")
