@@ -12,6 +12,7 @@ from scipy.stats import binom
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import OneHotEncoder
 from loadData import load_housing_data
 from addlTestSetMethods import shuffle_and_split_data
 from addlTestSetMethods import split_data_with_id_hash
@@ -155,5 +156,24 @@ outlier_pred = isolation_forest.fit_predict(X)
 print(outlier_pred)
 
 
+df_test = pd.DataFrame({"ocean_proximity": ["INLAND", "NEAR BAY"]})
+pd.get_dummies(df_test)
 
 
+# converting categorical values into floats
+cat_encoder = OneHotEncoder(sparse_output=False)
+cat_encoder.transform(df_test)
+
+df_test_unknown = pd.DataFrame({"ocean_proximity": ["<2H OCEAN", "ISLAND"]})
+pd.get_dummies(df_test_unknown)
+
+cat_encoder.handle_unknown = "ignore"
+cat_encoder.transform(df_test_unknown)
+
+print(cat_encoder.feature_names_in_)
+
+df_output = pd.DataFrame(cat_encoder.transform(df_test_unknown),
+                         columns=cat_encoder.get_feature_names_out(),
+                         index=df_test_unknown.index)
+
+print(df_output)

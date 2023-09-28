@@ -7,18 +7,23 @@
 import sys
 import urllib
 from urllib import request
+from pathlib import Path
+from packaging import version
 
 import sklearn
-import numpy as np
-import pandas as pd
-from pandas.plotting import scatter_matrix
-import matplotlib.pyplot as plt
-from pathlib import Path
-from loadData import load_housing_data
-from packaging import version
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
-from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder
+
+import numpy as np
+
+import pandas as pd
+from pandas.plotting import scatter_matrix
+
+import matplotlib.pyplot as plt
+
+from loadData import load_housing_data
 from saveFigs import save_fig
 
 assert version.parse(sklearn.__version__) >= version.parse("1.0.1")
@@ -191,6 +196,30 @@ def main() -> None:
     # code to drop outliers
     # housing = housing.iloc[outlier_pred == 1]
     # housing_labels = housing_labels.iloc[outlier_pred == 1]
+
+    # visualize text attributes
+    housing_cat = housing[["ocean_proximity"]]
+    print(housing_cat.head(8))
+
+    # convert text categories to numbers using the OrdinalEncoder class
+    ordinal_encoder = OrdinalEncoder()
+    housing_cat_encoded = ordinal_encoder.fit_transform(housing_cat)
+    print(housing_cat_encoded[:8])
+    print(ordinal_encoder.categories_)
+
+    # convert categorical values into one-hot vectors using the OneHotEncoder class
+    cat_encoder = OneHotEncoder(sparse_output=False)
+    housing_cat_1hot = cat_encoder.fit_transform(housing_cat)
+    print(housing_cat_1hot)
+    print(cat_encoder.categories_)
+
+
+
+
+
+
+
+
 
     # marker for end of program
     input("Press Enter to Exit...")
